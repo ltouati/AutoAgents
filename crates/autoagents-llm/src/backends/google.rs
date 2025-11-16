@@ -431,7 +431,7 @@ impl Google {
         }
         Self {
             api_key: api_key.into(),
-            model: model.unwrap_or_else(|| "gemini-1.5-flash".to_string()),
+            model: model.unwrap_or_else(|| "gemini-2.5-flash".to_string()),
             max_tokens,
             temperature,
             system,
@@ -583,12 +583,14 @@ impl Google {
         }
 
         let url = format!(
-            "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}",
+            "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
             model = self.model,
-            key = self.api_key
         );
 
-        let mut request = self.client.post(&url).json(&req_body);
+        let mut request = self.client
+            .headers(req::header::CONTENT_TYPE, "application/json")
+            .headers("x-goog-api-key", self.api_key)
+            .post(&url).json(&req_body);
 
         if let Some(timeout) = self.timeout_seconds {
             request = request.timeout(std::time::Duration::from_secs(timeout));
